@@ -1,0 +1,13 @@
+[Unit]
+Description=Check update
+After=network-online.target
+
+[Service]
+User=root
+Group=root
+Restart=always
+RestartSec=300
+ExecStart=/usr/bin/python3 /usr/local/sbin/upgrade/test.py
+
+[Install]
+WantedBy=multi-user.target
