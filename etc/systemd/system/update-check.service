@@ -7,7 +7,7 @@ User=root
 Group=root
 Restart=always
 RestartSec=300
-ExecStart=/usr/bin/python3 /usr/local/sbin/upgrade/test.py
+ExecStart=/usr/bin/python3 /usr/local/sbin/upgrade/test_api.py
 
 [Install]
 WantedBy=multi-user.target

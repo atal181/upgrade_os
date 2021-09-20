@@ -7,15 +7,26 @@ chng_value()
 	echo UPGRADE=1 >> /boot/boottime.rc
 }
 
-. /usr/local/sbin/upgrade/var/pw_rs
 
-if [ $update -eq 1 ]; then
+ovrly_dir()
+{
+	if [ ! -d "/overlay/upgrade" ]; then
+		mkdir -p /overlay/upgrade/{new,ro,rw,wd}
+	fi
+}
+
+
+. /usr/local/sbin/upgrade/var/pw_rs
+. /boot/boottime.rc
+if [[ $UPGRADE -eq 0 && $update -eq 1 ]]; then
+	echo "GDGD"
 #	zenity --display=:0 --question --title="System update" --text \
 #		"Do you want to download updates?" --ok-label="Download" --cancel-label="Later"
 #	if [[ $? -eq 0 ]]; then
 	if [[ 0 -eq 0 ]]; then
 
 		# Prepairing rootfs before rsync
+		ovrly_dir
 		umount / &> /tmp/update_rsync.logs && sleep .1
 		mount -L thinux -o ro /overlay/upgrade/ro/ &>> /tmp/update_rsync.logs
 		mount -t overlay -o lowerdir=/overlay/upgrade/ro/,upperdir=/overlay/upgrade/rw/,workdir=/overlay/upgrade/wd/ overlay /overlay/upgrade/new/ &>> /tmp/update_rsync.logs
