@@ -27,13 +27,13 @@ if [[ $UPGRADE -eq 0 && $update -eq 1 ]]; then
 
 		# Prepairing rootfs before rsync
 		ovrly_dir
-		umount / &> /tmp/update_rsync.logs && sleep .1
-		mount -L thinux -o ro /overlay/upgrade/ro/ &>> /tmp/update_rsync.logs
-		mount -t overlay -o lowerdir=/overlay/upgrade/ro/,upperdir=/overlay/upgrade/rw/,workdir=/overlay/upgrade/wd/ overlay /overlay/upgrade/new/ &>> /tmp/update_rsync.logs
+		umount / &> /var/log/update_rsync.logs && sleep .1
+		mount -L thinux -o ro /overlay/upgrade/ro/ &>> /var/logs/update_rsync.logs
+		mount -t overlay -o lowerdir=/overlay/upgrade/ro/,upperdir=/overlay/upgrade/rw/,workdir=/overlay/upgrade/wd/ overlay /overlay/upgrade/new/ &>> /var/logs/update_rsync.logs
 
         # Start rsync
 		sleep 1
-		rsync -avpuzh --delete --exclude 'boot/' ${rsync_url} /overlay/upgrade/new/ &>> /tmp/update_rsync.logs && chng_value
+		rsync -avpuzh --delete --exclude 'boot/' ${rsync_url} /overlay/upgrade/new/ &>> /var/logs/update_rsync.logs && chng_value
 		sleep 1
 		umount /overlay/upgrade/new/
 #		zenity --progress --title="System update" --text="Downloading" --percentage=0 --auto-kill
