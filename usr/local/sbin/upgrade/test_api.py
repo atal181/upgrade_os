@@ -45,15 +45,17 @@ def update_done(feed_url, file_boot, payload):
 		host_info = json.loads(payload)
 		host_info["upgrade_status"] =  "completed"
 		payload = json.dumps(host_info)
-		print(payload)
+		print("Update complete payload:", payload)
 		res = requests.post(feed_url + "upgrade_status", payload, headers=headers)
 		print("Status code of upgrade_status: ", res.status_code)
 		print(res.text)
 		if res.status_code == 200:
+			run(["mount -o rw,remount /"], shell=True)
 			with open(file_boot, "+w") as fb:
 				fb.truncate()
 				fb.write("RESET=0\n")
 				fb.write("UPGRADE=0")
+			run(["mount -o ro,remount /"], shell=True)
 
 
 def check_update(feed_url, file_var, payload):
@@ -64,11 +66,11 @@ def check_update(feed_url, file_var, payload):
 	# Check content of requests
 	print("\nAPI Endpoint: ", feed_url)
 	conten = resp.json()
-	print("\nResponce: ", conten)
+	print("\nResponce of check update: ", conten)
 	print("\nStatus code of check update: ", resp.status_code, "\n")
 
 	# Execute api responce
-	if resp.status_code == 200 and conten["update_required"]:
+	if resp.status_code == 200 and conten["upgrade_required"]:
 		run(["mount -o rw,remount /"], shell=True)
 		with open(file_var, "w") as pw:
 			pw.write("update=1\n")
