@@ -90,10 +90,10 @@ start_update() {
                 # Call mount partition function
                 mount_partions
                 echo ${LINE2} >> ${rootmnt}/boot/boottime.logs
-                condition
+                #condition
                 echo ${LINE3} >> ${rootmnt}/boot/boottime.logs
                 clear
-                echo "Verification passed. Starting upgrade."
+                echo "Starting upgrade......."
                 rsync -ah --info=progress2 --delete --exclude 'boot/' ${rootmnt}/overlay/upgrade/new/ ${rootmnt}/overlay/upgrade/ro/
 
                 if [[ "$?" == "0" ]]; then
@@ -105,8 +105,7 @@ start_update() {
                         echo "Error during updates installation" >> ${rootmnt}/boot/boottime.logs
                 fi
 
-                clean_up
-                reboot -f
+                clean_up && reboot -f
         else
                 exit 0
         fi
