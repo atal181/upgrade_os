@@ -1,12 +1,15 @@
+#!/bin/env python3
+
 import requests
 import json
-from subprocess import call, run
+from subprocess import run
 
 #feed_url = "http://13.233.154.223/test.json"
 #feed_url = "https://0asnqck5a1.execute-api.ap-south-1.amazonaws.com/checkUpgrade"
 feed_url = "https://ueq9xvupy5.execute-api.ap-south-1.amazonaws.com/" #upgrade_status"
 info_file = "/etc/thinux-release-info"
-file_var = "/usr/local/sbin/upgrade/var/pw_rs"
+#file_var = "/usr/local/sbin/upgrade/var/pw_rs"
+file_var = "/tmp/pw_rs"
 file_boot = "/boot/boottime.rc"
 machineID = "/etc/machine-id"
 headers = {"Content-type":"application/json"}
@@ -30,16 +33,14 @@ def file_opration(machineID, info_file):
 	# Fetch  info json file
 	with open(info_file) as fl:
         	host_info = json.loads(fl.read())
-        	print(host_info)
         	host_info["machine_id"] = mach_id.rstrip()
-        	print(host_info)
         	payload = json.dumps(host_info)
-        	print(payload)
+        	print("\nHost inforamation to be send: ", payload)
 	return payload
 
 
 def update_done(feed_url, file_boot, payload):
-	print(update_done_info)
+	print("\nInfo of boottimerc file: ",update_done_info)
 	if "UPDATE_STATUS" in update_done_info and update_done_info["UPDATE_STATUS"] == "update_complete":
 		# Appening upgrade status to main payload
 		host_info = json.loads(payload)
@@ -47,9 +48,10 @@ def update_done(feed_url, file_boot, payload):
 		payload = json.dumps(host_info)
 		print("Update complete payload:", payload)
 		res = requests.post(feed_url + "upgrade_status", payload, headers=headers)
-		print("Status code of upgrade_status: ", res.status_code)
-		print(res.text)
-		if res.status_code == 200:
+		print("Status code of upgrade complete: ", res.status_code)
+		res_json = res.json()
+		print("Respone of updated complete: ", res_json)
+		if res.status_code == 200 and res_json["database_updated"]:
 			run(["mount -o rw,remount /"], shell=True)
 			with open(file_boot, "+w") as fb:
 				fb.truncate()
@@ -66,8 +68,8 @@ def check_update(feed_url, file_var, payload):
 	# Check content of requests
 	print("\nAPI Endpoint: ", feed_url)
 	conten = resp.json()
+	print("\nStatus code of check update: ", resp.status_code)
 	print("\nResponce of check update: ", conten)
-	print("\nStatus code of check update: ", resp.status_code, "\n")
 
 	# Execute api responce
 	if resp.status_code == 200 and conten["upgrade_required"]:

@@ -74,7 +74,7 @@ mount_partions() {
 
 
 clean_up() {
-    echo ${LINE5} >> ${rootmnt}/boot/boottime.logs
+        echo ${LINE5} >> ${rootmnt}/boot/boottime.logs
         umount ${rootmnt}/overlay/upgrade/new/
         umount ${rootmnt}/overlay/upgrade/ro/
         umount -l ${rootmnt}/overlay/
@@ -95,17 +95,19 @@ start_update() {
                 clear
                 echo "Starting upgrade......."
                 rsync -ah --info=progress2 --delete --exclude 'boot/' ${rootmnt}/overlay/upgrade/new/ ${rootmnt}/overlay/upgrade/ro/
+		rst=$?
 
-                if [[ "$?" == "0" ]]; then
+                if [[ $rst -eq 0 ]]; then
                         sleep 1
                         sed -i 's/UPGRADE=1/UPGRADE=0/g' ${rootmnt}/boot/boottime.rc
                         echo ${LINE5} >> ${rootmnt}/boot/boottime.logs
                         sed -i -e "s/${UPDATE_STATUS}/update_complete/g" ${rootmnt}/boot/boottime.rc
+                        rm -rf ${rootmnt}/overlay/upgrade/
                 else
                         echo "Error during updates installation" >> ${rootmnt}/boot/boottime.logs
                 fi
-
                 clean_up && reboot -f
+
         else
                 exit 0
         fi

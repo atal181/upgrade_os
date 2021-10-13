@@ -3,11 +3,14 @@ Description=Check update
 After=network-online.target
 
 [Service]
+Environment="DISPLAY=:0.0"
+Environment="XAUTHORITY=/home/user/.Xauthority"
 User=root
 Group=root
 Restart=always
 RestartSec=300
-ExecStart=/usr/bin/python3 /usr/local/sbin/upgrade/test_api.py
+#ExecStart=/usr/bin/python3 /usr/local/sbin/upgrade/test_api.py
+ExecStart=/usr/local/sbin/upgrade/test_api.py
 
 [Install]
 WantedBy=multi-user.target

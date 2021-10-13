@@ -6,6 +6,8 @@ chng_value()
 	echo RESET=0 > /boot/boottime.rc
 	echo UPGRADE=1 >> /boot/boottime.rc
 	mount -o ro,remount / || mount -o ro,remount /boot
+	zenity --question --default-cancel --ellipsize --title="System update" --text \
+		"Restart system to install updates?" --ok-label="Restart" --cancel-label="Later" && reboot
 }
 
 
@@ -17,7 +19,7 @@ ovrly_dir()
 }
 
 
-. /usr/local/sbin/upgrade/var/pw_rs
+. /tmp/pw_rs
 . /boot/boottime.rc
 if [[ $UPGRADE -eq 0 && $update -eq 1 ]]; then
 	echo "GDGD"
@@ -36,7 +38,7 @@ if [[ $UPGRADE -eq 0 && $update -eq 1 ]]; then
 		ovrly_dir
 		sleep 1
 		umount / &> /var/log/update_rsync.logs && sleep 1
-		mount -o ro $THINUX_fs /overlay/upgrade/ro/ &>> /var/log/update_rsync.logs
+		mount -o ro $THINUX_fs /overlay/upgrade/ro/
 		mou=$?
 		mount -t overlay -o lowerdir=/overlay/upgrade/ro/,upperdir=/overlay/upgrade/rw/,workdir=/overlay/upgrade/wd/ overlay /overlay/upgrade/new/ &>> /var/log/update_rsync.logs
 		mouover=$?
@@ -44,15 +46,17 @@ if [[ $UPGRADE -eq 0 && $update -eq 1 ]]; then
         # Start rsync
 		sleep 1
 		if [[ $mou -eq 0 ]] && [[ $mouover -eq 0 ]];  then
-			rsync -avpuzh --delete --exclude 'boot/' ${rsync_url} /overlay/upgrade/new/ &>> /var/log/update_rsync.logs && chng_value
+			rsync -avpuzh --delete --exclude 'boot/' ${rsync_url} /overlay/upgrade/new/ &>> /var/log/update_rsync.logs \
+				&& chng_value || echo "Rsync error check /var/log/update_rsync.logs"
 			sleep 1
 			umount /overlay/upgrade/new/
 			umount /overlay/upgrade/ro/
 		else
-			echo "Rootfs mounting error or Overlay mounting error, check /var/log/update_rsync.logs"
+			echo "Rootfs mounting error or Overlay mounting error, check /var/log/update-check.log"
 		fi
 #		zenity --progress --title="System update" --text="Downloading" --percentage=0 --auto-kill
 	fi
 else
 	echo "Update are not available"
 fi
+
